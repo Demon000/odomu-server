@@ -1,0 +1,19 @@
+# IDEA project settings
+.idea/
+
+# Cache
+__pycache__/
+
+# Environment
+venv/
+
+# Database
+data/*
+!data/.gitkeep
+
+# Logs
+logs/*
+!logs/.gitkeep
+
+# App config
+config.py

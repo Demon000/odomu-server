@@ -1,0 +1,10 @@
+flask
+mongoengine
+bcrypt
+flask_jwt_extended
+flask_injector
+flask_cors
+bidict
+bson
+injector
+pyee
