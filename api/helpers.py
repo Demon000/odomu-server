@@ -56,7 +56,7 @@ def verify_access_token(optional=False):
     except (NoAuthorizationError, InvalidHeaderError, FreshTokenRequired):
         pass
 
-    return create_fresh_access_token(username)
+    return _create_fresh_access_token(username)
 
 
 def retrieve_logged_in_user(optional=False):
