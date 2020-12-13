@@ -1,5 +1,4 @@
 from flask import Blueprint, jsonify, request, Flask, Response
-from flask_jwt_extended import jwt_required
 
 from api.helpers import retrieve_logged_in_user, unset_tokens, set_new_tokens
 from services.UserService import UserService
