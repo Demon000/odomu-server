@@ -11,9 +11,9 @@ from mongoengine import connect
 from api import register_blueprint as register_api_blueprint
 from config import DB_NAME, DB_USERNAME, DB_PASSWORD, DB_HOST, JWT_SECRET_KEY, JWT_TOKEN_LOCATION, \
     JWT_COOKIE_CSRF_PROTECT, DB_PORT, DEFAULT_USERS
+from services.UserService import UserService
 from utils.dependencies import services_injector
 from utils.errors import HttpError, UserTokenExpired, UserTokenInvalid
-from utils.users import create_default_users_from_config
 
 connect(
     db=DB_NAME,
@@ -23,7 +23,8 @@ connect(
     port=DB_PORT,
 )
 
-create_default_users_from_config(DEFAULT_USERS)
+user_service = services_injector.get(UserService)
+user_service.add_from_config(DEFAULT_USERS)
 
 app = Flask(__name__)
 

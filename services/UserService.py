@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 
 from mongoengine import DoesNotExist, NotUniqueError
 
@@ -24,6 +24,13 @@ class UserService:
             raise UserAlreadyExists()
 
         return user
+
+    def add_from_config(self, users: List[dict]):
+        for user in users:
+            try:
+                self.add(user['username'], user['password'], user['first_name'], user['last_name'])
+            except UserAlreadyExists as e:
+                pass
 
     def verify_password(self, user: User, password: str):
         if not user.is_correct_password(password):
