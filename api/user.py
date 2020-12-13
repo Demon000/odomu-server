@@ -33,7 +33,6 @@ def login_post(service: UserService):
 
 
 @api.route('/logout', methods=['POST'])
-@jwt_required
 def logout_post():
     response = Response()
     unset_tokens(response)
