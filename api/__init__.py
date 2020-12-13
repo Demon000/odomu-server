@@ -2,14 +2,13 @@ from flask import Blueprint, jsonify, Flask
 
 from api.user import register_blueprint as register_user_api_blueprint
 
-api = Blueprint('api_v1', __name__)
+api = Blueprint('api', __name__)
 
 
 @api.route('/about')
 def about():
     return jsonify({
-        'description': 'Version 1 API endpoint',
-        'version': 1.0,
+        'description': 'API endpoint',
     })
 
 

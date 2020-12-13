@@ -11,11 +11,11 @@ from utils.dependencies import services_injector
 from utils.errors import UserNotLoggedIn, UserLoggedInInvalid
 
 
-def create_fresh_access_token(username: str):
+def _create_fresh_access_token(username: str):
     return create_access_token(identity=username, fresh=True)
 
 
-def create_refresh_token(username: str):
+def _create_refresh_token(username: str):
     return create_refresh_token(identity=username)
 
 
@@ -28,9 +28,9 @@ def set_refresh_token(response: Response, refresh_token):
 
 
 def set_new_tokens(response: Response, username: str):
-    access_token = create_fresh_access_token(username)
+    access_token = _create_fresh_access_token(username)
     set_access_token(response, access_token)
-    refresh_token = create_refresh_token(username)
+    refresh_token = _create_refresh_token(username)
     set_refresh_token(response, refresh_token)
     return access_token, refresh_token
 

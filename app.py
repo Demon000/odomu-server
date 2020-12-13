@@ -8,11 +8,12 @@ from flask_jwt_extended import JWTManager
 from flask_injector import FlaskInjector
 from mongoengine import connect
 
-from api import register_blueprint as register_api_v1_blueprint
+from api import register_blueprint as register_api_blueprint
 from config import DB_NAME, DB_USERNAME, DB_PASSWORD, DB_HOST, JWT_SECRET_KEY, JWT_TOKEN_LOCATION, \
     JWT_COOKIE_CSRF_PROTECT, DB_PORT, DEFAULT_USERS
 from utils.dependencies import services_injector
 from utils.errors import HttpError, UserTokenExpired, UserTokenInvalid
+from utils.users import create_default_users_from_config
 
 connect(
     db=DB_NAME,
@@ -21,6 +22,8 @@ connect(
     host=DB_HOST,
     port=DB_PORT,
 )
+
+create_default_users_from_config(DEFAULT_USERS)
 
 app = Flask(__name__)
 
@@ -31,7 +34,7 @@ app.config['JWT_TOKEN_LOCATION'] = JWT_TOKEN_LOCATION
 app.config['JWT_COOKIE_CSRF_PROTECT'] = JWT_COOKIE_CSRF_PROTECT
 jwt = JWTManager(app)
 
-register_api_v1_blueprint(app, '/api/v1')
+register_api_blueprint(app, '/api')
 
 FlaskInjector(app=app, injector=services_injector)
 

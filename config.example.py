@@ -11,7 +11,7 @@ DEFAULT_USERS = [
     {
         'username': 'admin',
         'first_name': 'Test',
-        'second_name': 'Admin',
+        'last_name': 'Admin',
         'password': 'test',
     },
 ]

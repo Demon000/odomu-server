@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, Flask, Response
-from flask_jwt_extended import create_access_token, set_access_cookies, jwt_required
+from flask_jwt_extended import jwt_required
 
-from helpers import retrieve_logged_in_user, unset_tokens, set_new_tokens
+from api.helpers import retrieve_logged_in_user, unset_tokens, set_new_tokens
 from services.UserService import UserService
 from utils.errors import UserLoginFailed
 
