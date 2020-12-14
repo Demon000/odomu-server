@@ -4,7 +4,7 @@ from api.helpers import retrieve_logged_in_user, unset_tokens, set_new_tokens
 from services.UserService import UserService
 from utils.errors import UserLoginFailed
 
-api = Blueprint('api_v1_user', __name__)
+api = Blueprint('api_user', __name__)
 
 
 @api.route('')
