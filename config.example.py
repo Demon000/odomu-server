@@ -7,11 +7,3 @@ JWT_SECRET_KEY = 'test'
 JWT_TOKEN_LOCATION = ['cookies']
 JWT_COOKIE_CSRF_PROTECT = False
 MAX_PAGINATED_LIMIT = 5
-DEFAULT_USERS = [
-    {
-        'username': 'admin',
-        'first_name': 'Test',
-        'last_name': 'Admin',
-        'password': 'test',
-    },
-]

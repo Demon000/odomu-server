@@ -4,16 +4,37 @@ from mongoengine import DoesNotExist, NotUniqueError
 
 from models.User import User
 
-from utils.errors import UserAlreadyExists, UserLoginFailed
+from utils.errors import UserAlreadyExists, UserLoginFailed, UserAddFailed, UserUsernameInvalid, UserPasswordInvalid, \
+    UserFirstNameInvalid, UserLastNameInvalid
 from validators.UserValidator import UserValidator
 
 
 class UserService:
     def __init__(self, validator: UserValidator):
-        self.validator = validator
+        self.__validator = validator
 
     def add(self, username: str, password: str, first_name: str, last_name: str) -> User:
-        self.validator.validate_parameters(username, password, first_name, last_name)
+        me = UserAddFailed()
+
+        try:
+            self.__validator.validate_username(username)
+        except UserUsernameInvalid as e:
+            me.add_error(e)
+
+        try:
+            self.__validator.validate_password(password)
+        except UserPasswordInvalid as e:
+            me.add_error(e)
+
+        try:
+            self.__validator.validate_first_name(first_name)
+        except UserFirstNameInvalid as e:
+            me.add_error(e)
+
+        try:
+            self.__validator.validate_last_name(last_name)
+        except UserLastNameInvalid as e:
+            me.add_error(e)
 
         user = User(username=username, first_name=first_name, last_name=last_name)
         user.set_password(password)
@@ -24,13 +45,6 @@ class UserService:
             raise UserAlreadyExists()
 
         return user
-
-    def add_from_config(self, users: List[dict]):
-        for user in users:
-            try:
-                self.add(user['username'], user['password'], user['first_name'], user['last_name'])
-            except UserAlreadyExists as e:
-                pass
 
     def verify_password(self, user: User, password: str):
         if not user.is_correct_password(password):

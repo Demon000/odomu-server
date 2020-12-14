@@ -6,25 +6,15 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_injector import FlaskInjector
-from mongoengine import connect
 
 from api import register_blueprint as register_api_blueprint
-from config import DB_NAME, DB_USERNAME, DB_PASSWORD, DB_HOST, JWT_SECRET_KEY, JWT_TOKEN_LOCATION, \
-    JWT_COOKIE_CSRF_PROTECT, DB_PORT, DEFAULT_USERS
-from services.UserService import UserService
+from config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, \
+    JWT_COOKIE_CSRF_PROTECT
+from database import connect_database_from_config
 from utils.dependencies import services_injector
-from utils.errors import HttpError, UserTokenExpired, UserTokenInvalid
+from utils.errors import APIError, UserTokenExpired, UserTokenInvalid
 
-connect(
-    db=DB_NAME,
-    username=DB_USERNAME,
-    password=DB_PASSWORD,
-    host=DB_HOST,
-    port=DB_PORT,
-)
-
-user_service = services_injector.get(UserService)
-user_service.add_from_config(DEFAULT_USERS)
+connect_database_from_config()
 
 app = Flask(__name__)
 
@@ -40,7 +30,7 @@ register_api_blueprint(app, '/api')
 FlaskInjector(app=app, injector=services_injector)
 
 
-@app.errorhandler(HttpError)
+@app.errorhandler(APIError)
 def http_errorhandler(e):
     return jsonify(e.to_dict()), e.status
 

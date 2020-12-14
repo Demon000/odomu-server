@@ -1,10 +1,11 @@
-class HttpError(Exception):
-    def __init__(self, message, code, status):
+class APIError(Exception):
+    def __init__(self, code, status, message):
         super().__init__(message)
 
         self.code = code
         self.status = status
         self.message = message
+        self.type = 'api-error'
 
     def to_dict(self):
         return {
@@ -14,45 +15,147 @@ class HttpError(Exception):
         }
 
 
-def make_http_error(name, code, status, default_message):
-    def __init__(self, message=default_message):
-        HttpError.__init__(self, message, code, status)
+class ValidationError(APIError):
+    def __init__(self, code, status, message, field_name):
+        super().__init__(code, status, message)
 
-    return type(name, (HttpError,), {
+        self.field_name = field_name
+        self.type = 'validation-error'
+
+    def to_dict(self):
+        d = super().to_dict()
+        d.update({
+            'field_name': self.field_name,
+        })
+        return d
+
+
+class MultiError(APIError):
+    def __init__(self, code, status, message, errors=None):
+        super().__init__(code, status, message)
+
+        if errors is None:
+            errors = []
+
+        self.errors = errors
+        self.type = 'multi-error'
+
+    def add_error(self, error: Exception):
+        if isinstance(error, MultiError) and error.code == self.code:
+            self.errors.extend(error.errors)
+        else:
+            self.errors.append(error)
+
+    def is_empty(self):
+        return not len(self.errors)
+
+    def to_dict(self):
+        d = super().to_dict()
+        d.update({
+            'errors': [e.to_dict() for e in self.errors]
+        })
+        return d
+
+
+def make_error(base_class, name, code, status, default_message, **default_kwargs):
+    def __init__(self, message=default_message, **kwargs):
+        merged_kwargs = {}
+        merged_kwargs.update(default_kwargs)
+        merged_kwargs.update(kwargs)
+        base_class.__init__(self, code, status, message, **merged_kwargs)
+
+    return type(name, (base_class,), {
         '__init__': __init__,
     })
 
 
-UserAlreadyExists = make_http_error('UserAlreadyExists',
-                                    'user-already-exists', 403,
-                                    'User already exists')
-UserDoesNotExist = make_http_error('UserDoesNotExist',
-                                   'user-not-exist', 404,
-                                   'User does not exist')
-UserUsernameInvalid = make_http_error('UserUsernameInvalid',
-                                      'user-username-invalid', 400,
-                                      'User username is invalid')
-UserPasswordInvalid = make_http_error('UserPasswordInvalid',
-                                      'user-password-invalid', 400,
-                                      'User password is invalid')
-UserFirstNameInvalid = make_http_error('UserFirstNameInvalid',
-                                       'user-first-name-invalid', 400,
-                                       'User first name is invalid')
-UserLastNameInvalid = make_http_error('UserLastNameInvalid',
-                                      'user-last-name-invalid', 400,
-                                      'User last name is invalid')
-UserLoginFailed = make_http_error('UserLoginFailed',
-                                  'user-login-failed', 401,
-                                  'User login failed')
-UserNotLoggedIn = make_http_error('UserNotLoggedIn',
-                                  'user-not-logged-in', 401,
-                                  'User not logged in')
-UserLoggedInInvalid = make_http_error('UserLoggedInInvalid',
-                                      'user-logged-in-invalid', 401,
-                                      'User logged in is invalid')
-UserTokenExpired = make_http_error('UserTokenExpired',
-                                   'user-token-expired', 401,
-                                   'User token expired')
-UserTokenInvalid = make_http_error('UserTokenInvalid',
-                                   'user-token-invalid', 422,
-                                   'User token is invalid')
+def make_api_error(name, code, status, message, **kwargs):
+    return make_error(APIError, name, code, status, message, **kwargs)
+
+
+def make_validation_error(name, code, status, message, **kwargs):
+    return make_error(ValidationError, name, code, status, message, **kwargs)
+
+
+def make_multi_error(name, code, status, message, **kwargs):
+    return make_error(MultiError, name, code, status, message, **kwargs)
+
+
+PaginationLimitInvalid = make_api_error('PaginationLimitInvalid',
+                                        'pagination-limit-invalid', 400,
+                                        'Pagination limit invalid')
+PaginationPageInvalid = make_api_error('PaginationPageInvalid',
+                                       'pagination-page-invalid', 400,
+                                       'Pagination page invalid')
+
+UserAlreadyExists = make_api_error('UserAlreadyExists',
+                                   'user-already-exists', 403,
+                                   'User already exists')
+UserDoesNotExist = make_api_error('UserDoesNotExist',
+                                  'user-not-exist', 404,
+                                  'User does not exist')
+UserLoginFailed = make_api_error('UserLoginFailed',
+                                 'user-login-failed', 401,
+                                 'User login failed')
+UserNotLoggedIn = make_api_error('UserNotLoggedIn',
+                                 'user-not-logged-in', 401,
+                                 'User not logged in')
+UserLoggedInInvalid = make_api_error('UserLoggedInInvalid',
+                                     'user-logged-in-invalid', 401,
+                                     'User logged in is invalid')
+UserTokenExpired = make_api_error('UserTokenExpired',
+                                  'user-token-expired', 401,
+                                  'User token expired')
+UserTokenInvalid = make_api_error('UserTokenInvalid',
+                                  'user-token-invalid', 422,
+                                  'User token is invalid')
+
+UserAddFailed = make_multi_error('UserAddFailed',
+                                 'user-add-failed', 400,
+                                 'User add failed')
+
+UserUsernameInvalid = make_validation_error('UserUsernameInvalid',
+                                            'user-username-invalid', 400,
+                                            'User username is invalid',
+                                            field_name='username')
+UserPasswordInvalid = make_validation_error('UserPasswordInvalid',
+                                            'user-password-invalid', 400,
+                                            'User password is invalid',
+                                            field_name='password')
+UserFirstNameInvalid = make_validation_error('UserFirstNameInvalid',
+                                             'user-first-name-invalid', 400,
+                                             'User first name is invalid',
+                                             field_name='first_name')
+UserLastNameInvalid = make_validation_error('UserLastNameInvalid',
+                                            'user-last-name-invalid', 400,
+                                            'User last name is invalid',
+                                            field_name='last_name')
+
+AreaDoesNotExist = make_api_error('AreaDoesNotExist',
+                                  'area-not-exist', 404,
+                                  'Area does not exist')
+
+AreaAddFailed = make_multi_error('AreaAddFailed',
+                                 'area-add-failed', 400,
+                                 'Area add failed')
+AreaUpdateFailed = make_multi_error('AreaUpdateFailed',
+                                    'area-update-failed', 400,
+                                    'Area update failed')
+
+AreaOwnerInvalid = make_validation_error('AreaOwnerInvalid',
+                                         'area-owner-invalid', 400,
+                                         'Area owner is invalid',
+                                         field_name='owner')
+
+AreaNameInvalid = make_validation_error('AreaNameInvalid',
+                                        'area-name-invalid', 400,
+                                        'Area name is invalid',
+                                        field_name='name')
+AreaCategoryInvalid = make_validation_error('AreaCategoryInvalid',
+                                            'area-category-invalid', 400,
+                                            'Area category is invalid',
+                                            field_name='category')
+AreaLocationInvalid = make_validation_error('AreaLocationInvalid',
+                                            'area-location-invalid', 400,
+                                            'Area location is invalid',
+                                            field_name='location')
