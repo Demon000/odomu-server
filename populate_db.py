@@ -27,7 +27,8 @@ for user_data in users_data:
 
 for user in users:
     try:
-        area_service.add(user, 'My home', 0, 'Aleea Putna, Nr. 4, Cluj-Napoca')
-        area_service.add(user, 'My office', 0, 'Bulevardul 21 Decembrie 1989 77, Cluj-Napoca')
+        for i in range(10):
+            area_service.add(user, '{} My home'.format(i), 0, 'Aleea Putna, Nr. 4, Cluj-Napoca')
+            area_service.add(user, '{} My office'.format(i), 0, 'Bulevardul 21 Decembrie 1989 77, Cluj-Napoca')
     except AreaAddFailed as e:
         print(e)
