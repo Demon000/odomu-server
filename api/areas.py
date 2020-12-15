@@ -18,8 +18,7 @@ def areas_get_categories():
 def areas_get(area_service: AreaService):
     user = request.user
 
-    areas = area_service.find_by(owner=user)
-    areas.order_by('-id')
+    areas = area_service.find_by(owner=user).order_by('-id')
 
     return jsonify(get_paginated_items_from_qs(areas))
 
