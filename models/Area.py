@@ -27,6 +27,7 @@ class Area(Document):
             'category': self.category,
             'category_text': area_categories.to_value(self.category),
             'has_image': False,
+            'with_details': with_details,
         }
 
         if with_details:
