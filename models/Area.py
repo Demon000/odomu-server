@@ -22,7 +22,7 @@ class Area(Document):
 
     def to_dict(self, with_details=False):
         d = {
-            'owner': self.owner,
+            'owner': self.owner.to_dict(),
             'name': self.name,
             'category': self.category,
             'category_text': area_categories_map.to_value(self.category),
