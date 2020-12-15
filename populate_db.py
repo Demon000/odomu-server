@@ -19,9 +19,11 @@ users = []
 for user_data in users_data:
     try:
         user = user_service.add(user_data[0], user_data[1], user_data[2], user_data[3])
-        users.append(user)
     except (UserAddFailed, UserAlreadyExists) as e:
+        user = user_service.find_one_by(username=user_data[0])
         print(e)
+
+    users.append(user)
 
 for user in users:
     try:
