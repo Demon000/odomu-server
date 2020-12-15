@@ -37,7 +37,7 @@ class AreaService:
         if not me.is_empty():
             raise me
 
-        area = Area(name=name, category=category, location=location)
+        area = Area(owner=owner, name=name, category=category, location=location)
 
         area.save()
 
