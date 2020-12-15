@@ -2,20 +2,20 @@ from mongoengine import Document, StringField, IntField, PointField, FileField, 
 
 from utils.DualMap import DualMap
 
-area_categories = DualMap({
-    1: 'Room',
-    2: 'Apartment',
-    3: 'House',
-    4: 'Office',
-})
+area_categories_map = DualMap({
+    0: 'Room',
+    1: 'Apartment',
+    2: 'House',
+    3: 'Office',
+}, (-1, 'unknown'))
 
 
 class Area(Document):
     owner = ReferenceField('User', required=True)
     name = StringField(required=True)
     category = IntField(required=True,
-                        min_value=area_categories.minimum_key(),
-                        max_value=area_categories.maximum_key())
+                        min_value=area_categories_map.minimum_key(),
+                        max_value=area_categories_map.maximum_key())
     location = StringField(required=True)
     location_point = PointField()
     image = FileField()
@@ -25,7 +25,7 @@ class Area(Document):
             'owner': self.owner,
             'name': self.name,
             'category': self.category,
-            'category_text': area_categories.to_value(self.category),
+            'category_text': area_categories_map.to_value(self.category),
             'has_image': False,
             'with_details': with_details,
         }
