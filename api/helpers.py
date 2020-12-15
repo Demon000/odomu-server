@@ -6,6 +6,7 @@ from flask_jwt_extended import get_jwt_identity, verify_jwt_refresh_token_in_req
     create_access_token, set_access_cookies, create_refresh_token, set_refresh_cookies, verify_fresh_jwt_in_request, \
     unset_access_cookies, unset_refresh_cookies
 from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError, FreshTokenRequired
+from jwt import ExpiredSignatureError
 
 from services.AreaService import AreaService
 from services.UserService import UserService
@@ -55,7 +56,7 @@ def verify_access_token(optional=False):
     try:
         verify_fresh_jwt_in_request()
         return None
-    except (NoAuthorizationError, InvalidHeaderError, FreshTokenRequired):
+    except ExpiredSignatureError:
         pass
 
     return _create_fresh_access_token(username)
