@@ -1,6 +1,6 @@
 from typing import Union
 
-from models.Area import area_categories
+from models.Area import area_categories_map
 from models.User import User
 from utils.errors import AreaCategoryInvalid, AreaNameInvalid, AreaLocationInvalid, AreaOwnerInvalid
 from validators.Validator import Validator
@@ -16,7 +16,7 @@ class AreaValidator(Validator):
         except ValueError:
             pass
 
-        value = area_categories.to_key_either(value)
+        value = area_categories_map.to_key_either(value)
         if value < 0:
             raise AreaCategoryInvalid("Area category couldn't be found inside the predefined list")
 
