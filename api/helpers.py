@@ -114,7 +114,7 @@ def retrieve_area(retrieval_type: AreaRetrievalType):
 
             area_service = services_injector.get(AreaService)
             if retrieval_type == AreaRetrievalType.ID_AND_OWNER:
-                area = area_service.find_by(owner=user, id=area_id)
+                area = area_service.find_one_by(owner=user, id=area_id)
             else:
                 area = None
 
