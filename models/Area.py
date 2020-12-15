@@ -22,6 +22,7 @@ class Area(Document):
 
     def to_dict(self, with_details=False):
         d = {
+            'id': str(self.id),
             'owner': self.owner.to_dict(),
             'name': self.name,
             'category': self.category,
