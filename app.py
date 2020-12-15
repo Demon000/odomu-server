@@ -8,8 +8,7 @@ from flask_jwt_extended import JWTManager
 from flask_injector import FlaskInjector
 
 from api import register_blueprint as register_api_blueprint
-from config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, \
-    JWT_COOKIE_CSRF_PROTECT
+from config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_COOKIE_CSRF_PROTECT
 from database import connect_database_from_config
 from utils.dependencies import services_injector
 from utils.errors import APIError, UserTokenExpired, UserTokenInvalid
