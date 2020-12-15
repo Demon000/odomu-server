@@ -10,7 +10,7 @@ api = Blueprint('api_areas', __name__)
 
 @api.route('/categories')
 def areas_get_categories():
-    return jsonify(area_categories_map.to_reverse_dict())
+    return jsonify(area_categories_map.to_dict())
 
 
 @api.route('')
