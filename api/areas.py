@@ -24,6 +24,7 @@ def areas_get(area_service: AreaService):
 
 
 @api.route('', methods=['POST'])
+@retrieve_logged_in_user()
 def areas_post(area_service: AreaService):
     user = request.user
     name = request.json.get('name')
