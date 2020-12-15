@@ -2,9 +2,15 @@ from flask import Blueprint, jsonify, request, Flask, Response
 
 from api.helpers import retrieve_logged_in_user, retrieve_area, AreaRetrievalType
 from api.pagination import get_paginated_items_from_qs
+from models.Area import area_categories_map
 from services.AreaService import AreaService
 
 api = Blueprint('api_areas', __name__)
+
+
+@api.route('/categories')
+def areas_get_categories():
+    return jsonify(area_categories_map.to_reverse_dict())
 
 
 @api.route('')
