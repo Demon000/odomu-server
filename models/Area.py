@@ -20,21 +20,16 @@ class Area(Document):
     location_point = PointField()
     image = FileField()
 
-    def to_dict(self, with_details=False):
-        d = {
+    def to_dict(self):
+        return {
             'id': str(self.id),
             'owner': self.owner.to_dict(),
             'name': self.name,
             'category': self.category,
             'category_text': area_categories_map.to_value(self.category),
             'has_image': False,
-            'with_details': with_details,
+            'no_devices': 0,
+            'no_controllers': 0,
+            'location': self.location,
+            'location_point': self.location_point,
         }
-
-        if with_details:
-            d['no_devices'] = 0
-            d['no_controllers'] = 0
-            d['location'] = self.location
-            d['location_point'] = self.location_point
-
-        return d
