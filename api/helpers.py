@@ -47,16 +47,16 @@ def verify_access_token(optional=False):
     try:
         verify_jwt_refresh_token_in_request()
         username = get_jwt_identity()
-    except (NoAuthorizationError, InvalidHeaderError):
+    except Exception as e:
         if optional:
             return
         else:
-            raise UserNotLoggedIn()
+            raise UserNotLoggedIn(original_message=str(e))
 
     try:
         verify_fresh_jwt_in_request()
         return None
-    except ExpiredSignatureError:
+    except Exception:
         pass
 
     return _create_fresh_access_token(username)

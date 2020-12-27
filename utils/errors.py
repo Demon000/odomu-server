@@ -1,23 +1,25 @@
 class APIError(Exception):
-    def __init__(self, code, status, message):
+    def __init__(self, code, status, message, *args, original_message=None, **kwargs):
         super().__init__(message)
 
         self.code = code
         self.status = status
         self.message = message
+        self.original_message = original_message
         self.type = 'api-error'
 
     def to_dict(self):
         return {
             'code': self.code,
             'message': self.message,
+            'original_message': self.original_message,
             'error': True,
         }
 
 
 class ValidationError(APIError):
-    def __init__(self, code, status, message, field_name):
-        super().__init__(code, status, message)
+    def __init__(self, code, status, message, field_name, *args, **kwargs):
+        super().__init__(code, status, message, *args, **kwargs)
 
         self.field_name = field_name
         self.type = 'validation-error'
@@ -31,8 +33,8 @@ class ValidationError(APIError):
 
 
 class MultiError(APIError):
-    def __init__(self, code, status, message, errors=None):
-        super().__init__(code, status, message)
+    def __init__(self, code, status, message, errors=None, *args, **kwargs):
+        super().__init__(code, status, message, *args, **kwargs)
 
         if errors is None:
             errors = []
