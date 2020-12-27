@@ -17,3 +17,7 @@ logs/*
 
 # App config
 config.py
+
+# Certs
+cert.pem
+key.pem
