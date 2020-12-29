@@ -9,7 +9,7 @@ from validators.Validator import Validator
 class AreaValidator(Validator):
     def parse_category(self, value: Union[str, int]):
         if value is None:
-            raise AreaCategoryInvalid('Area category cannot be empty')
+            raise AreaCategoryInvalid('Cannot be empty')
 
         try:
             value = int(value)
@@ -18,7 +18,7 @@ class AreaValidator(Validator):
 
         value = area_categories_map.to_key_either(value)
         if value < 0:
-            raise AreaCategoryInvalid("Area category couldn't be found inside the predefined list")
+            raise AreaCategoryInvalid("Must be one of")
 
         return value
 

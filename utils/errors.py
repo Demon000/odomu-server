@@ -1,3 +1,6 @@
+from models.Area import area_categories_map
+
+
 class APIError(Exception):
     def __init__(self, code, status, message, *args, original_message=None, **kwargs):
         super().__init__(message)
@@ -18,10 +21,11 @@ class APIError(Exception):
 
 
 class ValidationError(APIError):
-    def __init__(self, code, status, message, field_name, *args, **kwargs):
+    def __init__(self, code, status, message, field_name, valid_values=None, *args, **kwargs):
         super().__init__(code, status, message, *args, **kwargs)
 
         self.field_name = field_name
+        self.valid_values = valid_values
         self.type = 'validation-error'
 
     def to_dict(self):
@@ -29,6 +33,10 @@ class ValidationError(APIError):
         d.update({
             'field_name': self.field_name,
         })
+
+        if self.valid_values:
+            d['valid_values'] = self.valid_values
+
         return d
 
 
@@ -118,19 +126,19 @@ UserAddFailed = make_multi_error('UserAddFailed',
 
 UserUsernameInvalid = make_validation_error('UserUsernameInvalid',
                                             'user-username-invalid', 400,
-                                            'User username is invalid',
+                                            'Is invalid',
                                             field_name='username')
 UserPasswordInvalid = make_validation_error('UserPasswordInvalid',
                                             'user-password-invalid', 400,
-                                            'User password is invalid',
+                                            'Is invalid',
                                             field_name='password')
 UserFirstNameInvalid = make_validation_error('UserFirstNameInvalid',
                                              'user-first-name-invalid', 400,
-                                             'User first name is invalid',
+                                             'Is invalid',
                                              field_name='first_name')
 UserLastNameInvalid = make_validation_error('UserLastNameInvalid',
                                             'user-last-name-invalid', 400,
-                                            'User last name is invalid',
+                                            'Is invalid',
                                             field_name='last_name')
 
 AreaDoesNotExist = make_api_error('AreaDoesNotExist',
@@ -146,18 +154,18 @@ AreaUpdateFailed = make_multi_error('AreaUpdateFailed',
 
 AreaOwnerInvalid = make_validation_error('AreaOwnerInvalid',
                                          'area-owner-invalid', 400,
-                                         'Area owner is invalid',
+                                         'Is invalid',
                                          field_name='owner')
-
 AreaNameInvalid = make_validation_error('AreaNameInvalid',
                                         'area-name-invalid', 400,
-                                        'Area name is invalid',
+                                        'Is invalid',
                                         field_name='name')
 AreaCategoryInvalid = make_validation_error('AreaCategoryInvalid',
                                             'area-category-invalid', 400,
-                                            'Area category is invalid',
-                                            field_name='category')
+                                            'Is invalid',
+                                            field_name='category',
+                                            valid_values=area_categories_map.values())
 AreaLocationInvalid = make_validation_error('AreaLocationInvalid',
                                             'area-location-invalid', 400,
-                                            'Area location is invalid',
+                                            'Is invalid',
                                             field_name='location')
