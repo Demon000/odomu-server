@@ -2,14 +2,14 @@ from models.Area import area_categories_map
 
 
 class APIError(Exception):
-    def __init__(self, code, status, message, *args, original_message=None, **kwargs):
+    def __init__(self, code, status, message, *args, error_type='api-error', original_message=None, **kwargs):
         super().__init__(message)
 
         self.code = code
         self.status = status
         self.message = message
         self.original_message = original_message
-        self.type = 'api-error'
+        self.error_type = error_type
 
     def to_dict(self):
         return {
@@ -17,16 +17,16 @@ class APIError(Exception):
             'message': self.message,
             'original_message': self.original_message,
             'error': True,
+            'type': self.error_type,
         }
 
 
 class ValidationError(APIError):
     def __init__(self, code, status, message, field_name, valid_values=None, *args, **kwargs):
-        super().__init__(code, status, message, *args, **kwargs)
+        super().__init__(code, status, message, *args, error_type='validation-error', **kwargs)
 
         self.field_name = field_name
         self.valid_values = valid_values
-        self.type = 'validation-error'
 
     def to_dict(self):
         d = super().to_dict()
@@ -42,13 +42,12 @@ class ValidationError(APIError):
 
 class MultiError(APIError):
     def __init__(self, code, status, message, errors=None, *args, **kwargs):
-        super().__init__(code, status, message, *args, **kwargs)
+        super().__init__(code, status, message, *args, error_type='multi-error', **kwargs)
 
         if errors is None:
             errors = []
 
         self.errors = errors
-        self.type = 'multi-error'
 
     def add_error(self, error: Exception):
         if isinstance(error, MultiError) and error.code == self.code:
