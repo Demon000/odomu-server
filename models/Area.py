@@ -26,7 +26,6 @@ class Area(Document):
             'owner': self.owner.to_dict(),
             'name': self.name,
             'category': self.category,
-            'category_text': area_categories_map.to_value(self.category),
             'has_image': False,
             'no_devices': 0,
             'no_controllers': 0,
