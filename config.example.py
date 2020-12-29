@@ -1,4 +1,4 @@
-DB_NAME = 'automadomus'
+DB_NAME = 'odomu'
 DB_USERNAME = None
 DB_PASSWORD = None
 DB_HOST = '127.0.0.1'
