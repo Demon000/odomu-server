@@ -6,7 +6,7 @@ from api.areas import register_blueprint as register_areas_api_blueprint
 api = Blueprint('api', __name__)
 
 
-@api.route('/about')
+@api.route('/ping')
 def about():
     return jsonify({
         'description': 'API endpoint',
