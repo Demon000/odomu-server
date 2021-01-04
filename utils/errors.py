@@ -168,3 +168,24 @@ AreaLocationInvalid = make_validation_error('AreaLocationInvalid',
                                             'area-location-invalid', 400,
                                             'Is invalid',
                                             field_name='location')
+
+GeocodeForwardFailed = make_api_error('GeocodeForwardFailed',
+                                      'geocode-forward-failed', 400,
+                                      'Geocode forward failed')
+
+GeocodeAddressInvalid = make_validation_error('GeocodeAddressInvalid',
+                                              'geocode-address-invalid', 400,
+                                              'Is invalid',
+                                              field_name='address')
+
+GeocodeReverseFailed = make_api_error('GeocodeReverseFailed',
+                                      'geocode-reverse-failed', 400,
+                                      'Geocode reverse failed')
+GeocodeLatitudeInvalid = make_validation_error('GeocodeLatitudeInvalid',
+                                               'geocode-latitude-invalid', 400,
+                                               'Is invalid',
+                                               field_name='latitude')
+GeocodeLongitudeInvalid = make_validation_error('GeocodeLongitudeInvalid',
+                                                'geocode-longitude-invalid', 400,
+                                                'Is invalid',
+                                                field_name='longitude')
