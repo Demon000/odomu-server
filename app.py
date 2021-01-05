@@ -8,7 +8,7 @@ from flask_jwt_extended import JWTManager
 from flask_injector import FlaskInjector
 
 from api import register_blueprint as register_api_blueprint
-from config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_COOKIE_CSRF_PROTECT, JWT_COOKIE_SAMESITE, JWT_COOKIE_SECURE
+from config import JWT_SECRET_KEY, HOST, PORT, ACCESS_TOKEN_HEADER_NAMES, REFRESH_TOKEN_HEADER_NAMES
 from database import connect_database_from_config
 from utils.dependencies import services_injector
 from utils.errors import APIError, UserTokenExpired, UserTokenInvalid
@@ -17,13 +17,13 @@ connect_database_from_config()
 
 app = Flask(__name__)
 
-CORS(app, supports_credentials=True)
+exposed_headers = \
+    ACCESS_TOKEN_HEADER_NAMES + \
+    REFRESH_TOKEN_HEADER_NAMES + \
+    []
+CORS(app, supports_credentials=True, expose_headers=exposed_headers)
 
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
-app.config['JWT_TOKEN_LOCATION'] = JWT_TOKEN_LOCATION
-app.config['JWT_COOKIE_CSRF_PROTECT'] = JWT_COOKIE_CSRF_PROTECT
-app.config['JWT_COOKIE_SAMESITE'] = JWT_COOKIE_SAMESITE
-app.config['JWT_COOKIE_SECURE'] = JWT_COOKIE_SECURE
 jwt = JWTManager(app)
 
 register_api_blueprint(app, '/api')

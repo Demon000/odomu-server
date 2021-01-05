@@ -1,15 +1,19 @@
 from enum import Enum
 from functools import wraps
+from datetime import datetime
+from calendar import timegm
 
 from flask import request, Response
-from flask_jwt_extended import get_jwt_identity, verify_jwt_refresh_token_in_request, \
-    create_access_token, set_access_cookies, create_refresh_token, set_refresh_cookies, verify_fresh_jwt_in_request, \
-    unset_access_cookies, unset_refresh_cookies
+from flask_jwt_extended import get_jwt_identity, create_access_token, create_refresh_token, decode_token, \
+    get_unverified_jwt_headers
+from flask_jwt_extended.utils import verify_token_type
 
+from config import ACCESS_TOKEN_HEADER_NAMES, REFRESH_TOKEN_HEADER_NAMES
 from services.AreaService import AreaService
 from services.UserService import UserService
 from utils.dependencies import services_injector
-from utils.errors import UserNotLoggedIn, UserLoggedInInvalid, AreaDoesNotExist
+from utils.errors import UserNotLoggedIn, UserLoggedInInvalid, AreaDoesNotExist, JWTHeaderMissing, \
+    JWTAccessTokenNotFresh
 
 
 def _create_fresh_access_token(username: str):
@@ -21,11 +25,11 @@ def _create_refresh_token(username: str):
 
 
 def set_access_token(response: Response, access_token):
-    set_access_cookies(response, access_token)
+    response.headers[ACCESS_TOKEN_HEADER_NAMES[0]] = access_token
 
 
 def set_refresh_token(response: Response, refresh_token):
-    set_refresh_cookies(response, refresh_token)
+    response.headers[REFRESH_TOKEN_HEADER_NAMES[0]] = refresh_token
 
 
 def set_new_tokens(response: Response, username: str):
@@ -36,23 +40,82 @@ def set_new_tokens(response: Response, username: str):
     return access_token, refresh_token
 
 
-def unset_tokens(response: Response):
-    unset_access_cookies(response)
-    unset_refresh_cookies(response)
+class TokenType(Enum):
+    ACCESS = 'access'
+    REFRESH = 'refresh'
 
 
-def verify_access_token(optional=False):
+def _get_encoded_token(request_type: TokenType):
+    if request_type == TokenType.ACCESS:
+        header_names = ACCESS_TOKEN_HEADER_NAMES
+    elif request_type == TokenType.REFRESH:
+        header_names = REFRESH_TOKEN_HEADER_NAMES
+    else:
+        raise RuntimeError('Invalid request type {}'.format(request_type))
+
+    header = None
+    for header_name in header_names:
+        header = request.headers.get(header_name)
+        if header:
+            break
+
+    if not header:
+        raise JWTHeaderMissing('JWT {} header  missing'.format(request_type))
+
+    return header
+
+
+def _decode_token_from_request(request_type: TokenType):
+    encoded_token = _get_encoded_token(request_type)
+    decoded_token = decode_token(encoded_token)
+    jwt_header = get_unverified_jwt_headers(encoded_token)
+    verify_token_type(decoded_token, expected_type=request_type.value)
+
+    return decoded_token, jwt_header
+
+
+def _verify_token_in_request(request_type: TokenType):
+    jwt_data, jwt_header = _decode_token_from_request(request_type)
+    request.jwt_data = jwt_data
+    request.jwt_header = jwt_header
+
+
+def _verify_refresh_token_in_request():
+    _verify_token_in_request(TokenType.REFRESH)
+
+
+def _verify_fresh_token_in_request():
+    _verify_token_in_request(TokenType.ACCESS)
+
+    fresh = request.jwt_data['fresh']
+    if isinstance(fresh, bool):
+        if not fresh:
+            raise JWTAccessTokenNotFresh('Fresh field is false')
+    elif isinstance(fresh, int):
+        now = timegm(datetime.utcnow().utctimetuple())
+        if fresh < now:
+            raise JWTAccessTokenNotFresh('Fresh field is older than current time')
+    else:
+        raise JWTAccessTokenNotFresh('Fresh field has invalid type')
+
+
+def _get_token_identity():
+    return request.jwt_data['identity']
+
+
+def _verify_access_token(optional=False):
     try:
-        verify_jwt_refresh_token_in_request()
-        username = get_jwt_identity()
+        _verify_refresh_token_in_request()
+        username = _get_token_identity()
     except Exception as e:
+        print(e)
         if optional:
             return
         else:
             raise UserNotLoggedIn(original_message=str(e))
 
     try:
-        verify_fresh_jwt_in_request()
+        _verify_fresh_token_in_request()
         return None
     except Exception:
         pass
@@ -66,9 +129,9 @@ def retrieve_logged_in_user(optional=False):
         def wrapper(*args, **kwargs):
             request.user = None
 
-            access_token = verify_access_token(optional)
+            access_token = _verify_access_token(optional)
 
-            username = get_jwt_identity()
+            username = _get_token_identity()
             if not username:
                 if optional:
                     return

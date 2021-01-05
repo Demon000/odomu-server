@@ -1,6 +1,6 @@
-from flask import Blueprint, jsonify, request, Flask, Response
+from flask import Blueprint, jsonify, request, Flask
 
-from api.helpers import retrieve_logged_in_user, unset_tokens, set_new_tokens
+from api.helpers import retrieve_logged_in_user, set_new_tokens
 from services.UserService import UserService
 from utils.errors import UserLoginFailed
 
@@ -28,13 +28,6 @@ def login_post(service: UserService):
     response = jsonify(user.to_dict())
     set_new_tokens(response, username)
 
-    return response
-
-
-@api.route('/logout', methods=['POST'])
-def logout_post():
-    response = Response()
-    unset_tokens(response)
     return response
 
 

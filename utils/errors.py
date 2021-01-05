@@ -97,6 +97,13 @@ PaginationPageInvalid = make_api_error('PaginationPageInvalid',
                                        'pagination-page-invalid', 400,
                                        'Pagination page invalid')
 
+JWTHeaderMissing = make_api_error('JWTHeaderMissing',
+                                  'jwt-header-missing', 403,
+                                  'JWT header missing')
+JWTAccessTokenNotFresh = make_api_error('JWTAccessTokenNotFresh',
+                                        'jwt-access-token-not-fresh', 403,
+                                        'JWT access token is not fresh')
+
 UserAlreadyExists = make_api_error('UserAlreadyExists',
                                    'user-already-exists', 403,
                                    'User already exists')
