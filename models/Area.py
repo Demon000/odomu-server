@@ -1,7 +1,7 @@
 from base64 import b64decode
 from tempfile import TemporaryFile
 
-from mongoengine import Document, StringField, IntField, PointField, FileField, ReferenceField, ImageField, GridFSError
+from mongoengine import Document, StringField, IntField, PointField, ReferenceField, ImageField, GridFSError
 
 from utils.DualMap import DualMap
 
