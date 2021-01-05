@@ -82,7 +82,7 @@ class AreaService:
 
         if location is not None:
             try:
-                self.__validator.validate_location(name)
+                self.__validator.validate_location(location)
                 area.location = location
             except AreaLocationInvalid as e:
                 me.add_error(e)
