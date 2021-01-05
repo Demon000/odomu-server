@@ -25,6 +25,8 @@ def forward_get():
 
     return jsonify({
         'address': results.raw['display_name'],
+        'latitude': results.raw['lat'],
+        'longitude': results.raw['lon'],
     })
 
 
@@ -45,8 +47,7 @@ def reverse_get():
         raise GeocodeReverseFailed()
 
     return jsonify({
-        'latitude': results.raw['lat'],
-        'longitude': results.raw['lon'],
+        'address': results.raw['display_name'],
     })
 
 
