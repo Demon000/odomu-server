@@ -4,8 +4,7 @@ from datetime import datetime
 from calendar import timegm
 
 from flask import request, Response
-from flask_jwt_extended import get_jwt_identity, create_access_token, create_refresh_token, decode_token, \
-    get_unverified_jwt_headers
+from flask_jwt_extended import create_access_token, create_refresh_token, decode_token, get_unverified_jwt_headers
 from flask_jwt_extended.utils import verify_token_type
 
 from config import ACCESS_TOKEN_HEADER_NAMES, REFRESH_TOKEN_HEADER_NAMES
