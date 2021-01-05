@@ -3,7 +3,7 @@ from typing import Union, List
 from models.Area import Area
 from models.User import User
 from utils.errors import AreaCategoryInvalid, AreaAddFailed, AreaNameInvalid, AreaLocationInvalid, \
-    AreaUpdateFailed, AreaOwnerInvalid, AreaLocationPointInvalid
+    AreaUpdateFailed, AreaOwnerInvalid, AreaLocationPointInvalid, AreaImageInvalid
 from validators.AreaValidator import AreaValidator
 
 
@@ -11,7 +11,8 @@ class AreaService:
     def __init__(self, validator: AreaValidator):
         self.__validator = validator
 
-    def add(self, owner: User, name: str, category: Union[str, int], location: str, location_point: List[float]):
+    def add(self, owner: User, name: str, category: Union[str, int], location: str, location_point: List[float],
+            image: str):
         me = AreaAddFailed()
 
         try:
@@ -39,10 +40,17 @@ class AreaService:
         except AreaLocationPointInvalid as e:
             me.add_error(e)
 
+        area = Area(owner=owner, name=name, category=category, location=location, location_point=location_point)
+
+        if image is not None:
+            try:
+                area.put_image(image)
+            except Exception as e:
+                ae = AreaImageInvalid(original_message=str(e))
+                me.add_error(ae)
+
         if not me.is_empty():
             raise me
-
-        area = Area(owner=owner, name=name, category=category, location=location, location_point=location_point)
 
         area.save()
 
@@ -54,7 +62,8 @@ class AreaService:
     def find_by(self, *args, **kwargs):
         return Area.objects(*args, **kwargs)
 
-    def update(self, area: Area, name: str, category: Union[str, int], location: str, location_point: List[float]):
+    def update(self, area: Area, name: str, category: Union[str, int], location: str, location_point: List[float],
+               image: str):
         me = AreaUpdateFailed()
 
         if name is not None:
@@ -84,6 +93,13 @@ class AreaService:
                 area.location_point = location_point
             except AreaLocationPointInvalid as e:
                 me.add_error(e)
+
+        if image is not None:
+            try:
+                area.put_image(image)
+            except Exception as e:
+                ae = AreaImageInvalid(original_message=str(e))
+                me.add_error(ae)
 
         if not me.is_empty():
             raise me

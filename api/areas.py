@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, Flask, Response
+from flask import Blueprint, jsonify, request, Flask, Response, send_file
 
 from api.helpers import retrieve_logged_in_user, retrieve_area, AreaRetrievalType
 from api.pagination import get_paginated_items_from_qs
@@ -31,8 +31,9 @@ def areas_post(area_service: AreaService):
     category = request.json.get('category')
     location = request.json.get('location')
     location_point = request.json.get('location_point')
+    image = request.json.get('image')
 
-    area = area_service.add(user, name, category, location, location_point)
+    area = area_service.add(user, name, category, location, location_point, image)
 
     return jsonify(area.to_dict())
 
@@ -45,6 +46,15 @@ def areas_get_area():
     return jsonify(area.to_dict())
 
 
+@api.route('/<string:area_id>/image')
+@retrieve_logged_in_user()
+@retrieve_area(AreaRetrievalType.ID_AND_OWNER)
+def areas_get_area_image():
+    area = request.area
+    filename = 'area_{}_image.png'.format(area.id)
+    return send_file(area.image, as_attachment=True, attachment_filename=filename)
+
+
 @api.route('/<string:area_id>', methods=['PATCH'])
 @retrieve_logged_in_user()
 @retrieve_area(AreaRetrievalType.ID_AND_OWNER)
@@ -53,10 +63,11 @@ def areas_patch_area(area_service: AreaService):
     category = request.json.get('category')
     location = request.json.get('location')
     location_point = request.json.get('location_point')
+    image = request.json.get('image')
 
     area = request.area
 
-    area_service.update(area, name, category, location, location_point)
+    area_service.update(area, name, category, location, location_point, image)
 
     return jsonify(area.to_dict())
 

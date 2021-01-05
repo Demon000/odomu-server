@@ -1,4 +1,7 @@
-from mongoengine import Document, StringField, IntField, PointField, FileField, ReferenceField
+from base64 import b64decode
+from tempfile import TemporaryFile
+
+from mongoengine import Document, StringField, IntField, PointField, FileField, ReferenceField, ImageField, GridFSError
 
 from utils.DualMap import DualMap
 
@@ -18,7 +21,20 @@ class Area(Document):
                         max_value=area_categories_map.maximum_key())
     location = StringField(required=True)
     location_point = PointField()
-    image = FileField()
+    image = ImageField(size=(1920, 1080, False), thumbnail_size=(256, 256, False))
+
+    def put_image(self, b64_image: str):
+        file_like = b64decode(b64_image)
+        bytes_image = bytearray(file_like)
+
+        with TemporaryFile() as f:
+            f.write(bytes_image)
+            f.flush()
+            f.seek(0)
+            try:
+                self.image.put(f)
+            except GridFSError:
+                self.image.replace(f)
 
     def to_dict(self):
         #
