@@ -55,6 +55,15 @@ def areas_get_area_image():
     return send_file(area.image, as_attachment=True, attachment_filename=filename, cache_timeout=0)
 
 
+@api.route('/<string:area_id>/thumbnail')
+@retrieve_logged_in_user(token_location=TokenLocation.QUERY_STRING)
+@retrieve_area(AreaRetrievalType.ID_AND_OWNER)
+def areas_get_area_thumbnail():
+    area = request.area
+    filename = 'area_{}_thumbnail.png'.format(area.id)
+    return send_file(area.image.thumbnail, as_attachment=True, attachment_filename=filename, cache_timeout=0)
+
+
 @api.route('/<string:area_id>', methods=['PATCH'])
 @retrieve_logged_in_user()
 @retrieve_area(AreaRetrievalType.ID_AND_OWNER)
