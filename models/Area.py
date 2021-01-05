@@ -21,6 +21,17 @@ class Area(Document):
     image = FileField()
 
     def to_dict(self):
+        #
+        # HACK: location point is list when the object was created, but gets saved
+        # as a dict with a coordinates key containing the list
+        #
+        if isinstance(self.location_point, list):
+            location_points = self.location_point
+        elif isinstance(self.location_point, dict):
+            location_points = self.location_point['coordinates']
+        else:
+            location_points = []
+
         return {
             'id': str(self.id),
             'owner': self.owner.to_dict(),
@@ -30,5 +41,5 @@ class Area(Document):
             'no_devices': 0,
             'no_controllers': 0,
             'location': self.location,
-            'location_point': self.location_point,
+            'location_point': location_points,
         }
