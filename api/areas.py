@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, Flask, Response, send_file
 
-from api.helpers import retrieve_logged_in_user, retrieve_area, AreaRetrievalType
+from api.helpers import retrieve_logged_in_user, retrieve_area, AreaRetrievalType, TokenLocation
 from api.pagination import get_paginated_items_from_qs
 from models.Area import area_categories_map
 from services.AreaService import AreaService
@@ -47,7 +47,7 @@ def areas_get_area():
 
 
 @api.route('/<string:area_id>/image')
-@retrieve_logged_in_user()
+@retrieve_logged_in_user(token_location=TokenLocation.QUERY_STRING)
 @retrieve_area(AreaRetrievalType.ID_AND_OWNER)
 def areas_get_area_image():
     area = request.area
