@@ -30,8 +30,9 @@ def areas_post(area_service: AreaService):
     name = request.json.get('name')
     category = request.json.get('category')
     location = request.json.get('location')
+    location_point = request.json.get('location_point')
 
-    area = area_service.add(user, name, category, location)
+    area = area_service.add(user, name, category, location, location_point)
 
     return jsonify(area.to_dict())
 
@@ -51,10 +52,11 @@ def areas_patch_area(area_service: AreaService):
     name = request.json.get('name')
     category = request.json.get('category')
     location = request.json.get('location')
+    location_point = request.json.get('location_point')
 
     area = request.area
 
-    area_service.update(area, name, category, location)
+    area_service.update(area, name, category, location, location_point)
 
     return jsonify(area.to_dict())
 
