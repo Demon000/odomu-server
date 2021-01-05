@@ -1,9 +1,9 @@
-from typing import Union
+from typing import Union, List
 
 from models.Area import Area
 from models.User import User
-from utils.errors import AreaCategoryInvalid, AreaAddFailed, AreaNameInvalid, AreaLocationInvalid,\
-    AreaUpdateFailed, AreaOwnerInvalid
+from utils.errors import AreaCategoryInvalid, AreaAddFailed, AreaNameInvalid, AreaLocationInvalid, \
+    AreaUpdateFailed, AreaOwnerInvalid, AreaLocationPointInvalid
 from validators.AreaValidator import AreaValidator
 
 
@@ -11,7 +11,7 @@ class AreaService:
     def __init__(self, validator: AreaValidator):
         self.__validator = validator
 
-    def add(self, owner: User, name: str, category: Union[str, int], location: str):
+    def add(self, owner: User, name: str, category: Union[str, int], location: str, location_point: List[float]):
         me = AreaAddFailed()
 
         try:
@@ -30,14 +30,19 @@ class AreaService:
             me.add_error(e)
 
         try:
-            self.__validator.validate_location(name)
+            self.__validator.validate_location(location)
         except AreaLocationInvalid as e:
+            me.add_error(e)
+
+        try:
+            self.__validator.validate_location_point(location_point)
+        except AreaLocationPointInvalid as e:
             me.add_error(e)
 
         if not me.is_empty():
             raise me
 
-        area = Area(owner=owner, name=name, category=category, location=location)
+        area = Area(owner=owner, name=name, category=category, location=location, location_point=location_point)
 
         area.save()
 
@@ -49,7 +54,7 @@ class AreaService:
     def find_by(self, *args, **kwargs):
         return Area.objects(*args, **kwargs)
 
-    def update(self, area: Area, name: str, category: Union[str, int], location: str):
+    def update(self, area: Area, name: str, category: Union[str, int], location: str, location_point: List[float]):
         me = AreaUpdateFailed()
 
         if name is not None:
@@ -71,6 +76,13 @@ class AreaService:
                 self.__validator.validate_location(name)
                 area.location = location
             except AreaLocationInvalid as e:
+                me.add_error(e)
+
+        if location_point is not None:
+            try:
+                self.__validator.validate_location_point(location_point)
+                area.location_point = location_point
+            except AreaLocationPointInvalid as e:
                 me.add_error(e)
 
         if not me.is_empty():

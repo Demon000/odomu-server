@@ -168,6 +168,10 @@ AreaLocationInvalid = make_validation_error('AreaLocationInvalid',
                                             'area-location-invalid', 400,
                                             'Is invalid',
                                             field_name='location')
+AreaLocationPointInvalid = make_validation_error('AreaLocationPointInvalid',
+                                                 'area-location-point-invalid', 400,
+                                                 'Is invalid',
+                                                 field_name='location_point')
 
 GeocodeForwardFailed = make_api_error('GeocodeForwardFailed',
                                       'geocode-forward-failed', 400,
