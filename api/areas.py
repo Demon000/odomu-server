@@ -52,7 +52,7 @@ def areas_get_area():
 def areas_get_area_image():
     area = request.area
     filename = 'area_{}_image.png'.format(area.id)
-    return send_file(area.image, as_attachment=True, attachment_filename=filename)
+    return send_file(area.image, as_attachment=True, attachment_filename=filename, cache_timeout=0)
 
 
 @api.route('/<string:area_id>', methods=['PATCH'])
