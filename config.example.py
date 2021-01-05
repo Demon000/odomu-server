@@ -16,3 +16,9 @@ REFRESH_TOKEN_HEADER_NAMES = [
     'Refresh-Token',
     'refresh-token'
 ]
+ACCESS_TOKEN_QUERY_STRING_NAMES = [
+    'access_token',
+]
+REFRESH_TOKEN_QUERY_STRING_NAMES = [
+    'refresh_token',
+]

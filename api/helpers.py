@@ -7,7 +7,8 @@ from flask import request, Response
 from flask_jwt_extended import create_access_token, create_refresh_token, decode_token, get_unverified_jwt_headers
 from flask_jwt_extended.utils import verify_token_type
 
-from config import ACCESS_TOKEN_HEADER_NAMES, REFRESH_TOKEN_HEADER_NAMES
+from config import ACCESS_TOKEN_HEADER_NAMES, REFRESH_TOKEN_HEADER_NAMES, ACCESS_TOKEN_QUERY_STRING_NAMES, \
+    REFRESH_TOKEN_QUERY_STRING_NAMES
 from services.AreaService import AreaService
 from services.UserService import UserService
 from utils.dependencies import services_injector
@@ -44,28 +45,60 @@ class TokenType(Enum):
     REFRESH = 'refresh'
 
 
-def _get_encoded_token(request_type: TokenType):
-    if request_type == TokenType.ACCESS:
-        header_names = ACCESS_TOKEN_HEADER_NAMES
-    elif request_type == TokenType.REFRESH:
-        header_names = REFRESH_TOKEN_HEADER_NAMES
-    else:
-        raise RuntimeError('Invalid request type {}'.format(request_type))
+class TokenLocation(Enum):
+    HEADERS = 'headers'
+    QUERY_STRING = 'query-string'
 
-    header = None
-    for header_name in header_names:
-        header = request.headers.get(header_name)
-        if header:
+
+def _get_header_names(request_type: TokenType):
+    if request_type == TokenType.ACCESS:
+        return ACCESS_TOKEN_HEADER_NAMES
+    elif request_type == TokenType.REFRESH:
+        return REFRESH_TOKEN_HEADER_NAMES
+
+    return None
+
+
+def _get_header_token(name: str):
+    return request.headers.get(name)
+
+
+def _get_query_param_names(request_type: TokenType):
+    if request_type == TokenType.ACCESS:
+        return ACCESS_TOKEN_QUERY_STRING_NAMES
+    elif request_type == TokenType.REFRESH:
+        return REFRESH_TOKEN_QUERY_STRING_NAMES
+
+    return None
+
+
+def _get_query_param_token(name: str):
+    return request.args.get(name)
+
+
+def _get_encoded_token(request_type: TokenType, get_names_fn, get_token_fn):
+    names = get_names_fn(request_type)
+
+    token = None
+    for name in names:
+        token = get_token_fn(name)
+        if token:
             break
 
-    if not header:
+    if not token:
         raise JWTHeaderMissing('JWT {} header  missing'.format(request_type))
 
-    return header
+    return token
 
 
-def _decode_token_from_request(request_type: TokenType):
-    encoded_token = _get_encoded_token(request_type)
+def _decode_token_from_request(request_type: TokenType, token_location: TokenLocation):
+    encoded_token = None
+
+    if token_location == TokenLocation.HEADERS:
+        encoded_token = _get_encoded_token(request_type, _get_header_names, _get_header_token)
+    elif token_location == TokenLocation.QUERY_STRING:
+        encoded_token = _get_encoded_token(request_type, _get_query_param_names, _get_query_param_token)
+
     decoded_token = decode_token(encoded_token)
     jwt_header = get_unverified_jwt_headers(encoded_token)
     verify_token_type(decoded_token, expected_type=request_type.value)
@@ -73,18 +106,18 @@ def _decode_token_from_request(request_type: TokenType):
     return decoded_token, jwt_header
 
 
-def _verify_token_in_request(request_type: TokenType):
-    jwt_data, jwt_header = _decode_token_from_request(request_type)
+def _verify_token_in_request(request_type: TokenType, token_location: TokenLocation):
+    jwt_data, jwt_header = _decode_token_from_request(request_type, token_location)
     request.jwt_data = jwt_data
     request.jwt_header = jwt_header
 
 
-def _verify_refresh_token_in_request():
-    _verify_token_in_request(TokenType.REFRESH)
+def _verify_refresh_token_in_request(token_location: TokenLocation):
+    _verify_token_in_request(TokenType.REFRESH, token_location)
 
 
-def _verify_fresh_token_in_request():
-    _verify_token_in_request(TokenType.ACCESS)
+def _verify_fresh_token_in_request(token_location: TokenLocation):
+    _verify_token_in_request(TokenType.ACCESS, token_location)
 
     fresh = request.jwt_data['fresh']
     if isinstance(fresh, bool):
@@ -102,9 +135,9 @@ def _get_token_identity():
     return request.jwt_data['identity']
 
 
-def _verify_access_token(optional=False):
+def _verify_access_token(optional: bool, token_location: TokenLocation):
     try:
-        _verify_refresh_token_in_request()
+        _verify_refresh_token_in_request(token_location)
         username = _get_token_identity()
     except Exception as e:
         print(e)
@@ -114,7 +147,7 @@ def _verify_access_token(optional=False):
             raise UserNotLoggedIn(original_message=str(e))
 
     try:
-        _verify_fresh_token_in_request()
+        _verify_fresh_token_in_request(token_location)
         return None
     except Exception:
         pass
@@ -122,13 +155,13 @@ def _verify_access_token(optional=False):
     return _create_fresh_access_token(username)
 
 
-def retrieve_logged_in_user(optional=False):
+def retrieve_logged_in_user(optional: bool = False, token_location: TokenLocation = TokenLocation.HEADERS):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
             request.user = None
 
-            access_token = _verify_access_token(optional)
+            access_token = _verify_access_token(optional, token_location)
 
             username = _get_token_identity()
             if not username:
