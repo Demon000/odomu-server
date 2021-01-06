@@ -4,6 +4,7 @@ DB_PASSWORD = None
 DB_HOST = '127.0.0.1'
 DB_PORT = 27017
 JWT_SECRET_KEY = 'test'
+SECRET_KEY = 'test'
 MAX_PAGINATED_LIMIT = 5
 GEOCODE_USER_AGENT = 'odomu-server-geocode-agent'
 HOST = '0.0.0.0'

@@ -9,3 +9,5 @@ bson
 injector
 pyee
 geopy
+flask_socketio
+eventlet
