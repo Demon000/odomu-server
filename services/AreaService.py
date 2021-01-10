@@ -23,7 +23,7 @@ class AreaService:
         self.emitter = BaseEventEmitter()
 
     def add(self, owner: User, name: str, category: Union[str, int], location: str, location_point: List[float],
-            image: str):
+            image: str = None):
         me = AreaAddFailed()
 
         try:
