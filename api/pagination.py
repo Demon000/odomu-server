@@ -8,7 +8,7 @@ from utils.errors import PaginationPageInvalid, PaginationLimitInvalid
 
 
 def default_mapping_fn(item, *args, **kwargs):
-    return item.to_dict()
+    return item.to_dict(*args, **kwargs)
 
 
 def get_page_count(no_items, limit) -> int:

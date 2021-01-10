@@ -1,7 +1,8 @@
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from tempfile import TemporaryFile
 
-from mongoengine import Document, StringField, IntField, PointField, ReferenceField, ImageField, GridFSError
+from mongoengine import Document, StringField, IntField, PointField, ReferenceField, ImageField, GridFSError, \
+    GridFSProxy
 
 from utils.DualMap import DualMap
 
@@ -23,12 +24,12 @@ class Area(Document):
     location_point = PointField()
     image = ImageField(size=(1920, 1080, False), thumbnail_size=(256, 256, False))
 
-    def put_image(self, b64_image: str):
-        file_like = b64decode(b64_image)
-        bytes_image = bytearray(file_like)
+    def put_b64_image(self, b64_string: str):
+        byte_string = b64decode(b64_string)
+        byte_array = bytearray(byte_string)
 
         with TemporaryFile() as f:
-            f.write(bytes_image)
+            f.write(byte_array)
             f.flush()
             f.seek(0)
             try:
@@ -36,7 +37,13 @@ class Area(Document):
             except GridFSError:
                 self.image.replace(f)
 
-    def to_dict(self):
+    def get_b64_image_common(self, image: GridFSProxy):
+        byte_array = image.read()
+        byte_string = bytes(byte_array)
+        b64_string = b64encode(byte_string)
+        return b64_string.decode('utf-8')
+
+    def to_dict(self, with_image: bool = False, with_thumbnail: bool = False):
         #
         # HACK: location point is list when the object was created, but gets saved
         # as a dict with a coordinates key containing the list
@@ -48,7 +55,7 @@ class Area(Document):
         else:
             location_points = []
 
-        return {
+        d = {
             'id': str(self.id),
             'owner': self.owner.to_dict(),
             'name': self.name,
@@ -59,3 +66,11 @@ class Area(Document):
             'location': self.location,
             'location_point': location_points,
         }
+
+        if with_image and self.image:
+            d['image'] = self.get_b64_image_common(self.image)
+
+        if with_thumbnail and self.image and self.image.thumbnail:
+            d['thumbnail'] = self.get_b64_image_common(self.image.thumbnail)
+
+        return d

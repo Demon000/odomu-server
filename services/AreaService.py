@@ -55,7 +55,7 @@ class AreaService:
 
         if image is not None:
             try:
-                area.put_image(image)
+                area.put_b64_image(image)
             except Exception as e:
                 ae = AreaImageInvalid(original_message=str(e))
                 me.add_error(ae)
@@ -109,7 +109,7 @@ class AreaService:
 
         if image is not None:
             try:
-                area.put_image(image)
+                area.put_b64_image(image)
             except Exception as e:
                 ae = AreaImageInvalid(original_message=str(e))
                 me.add_error(ae)
