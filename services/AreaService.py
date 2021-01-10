@@ -53,7 +53,7 @@ class AreaService:
 
         area = Area(owner=owner, name=name, category=category, location=location, location_point=location_point)
 
-        if image is not None:
+        if image:
             try:
                 area.put_b64_image(image)
             except Exception as e:
@@ -107,7 +107,7 @@ class AreaService:
             except AreaLocationPointInvalid as e:
                 me.add_error(e)
 
-        if image is not None:
+        if image:
             try:
                 area.put_b64_image(image)
             except Exception as e:
