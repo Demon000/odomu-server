@@ -1,10 +1,10 @@
+import traceback
 from enum import Enum
 from functools import wraps
-from datetime import datetime
-from calendar import timegm
+from typing import Union
 
 from flask import request, Response
-from flask_jwt_extended import create_access_token, create_refresh_token, decode_token, get_unverified_jwt_headers
+from flask_jwt_extended import create_access_token, create_refresh_token, decode_token
 from flask_jwt_extended.utils import verify_token_type
 
 from config import ACCESS_TOKEN_HEADER_NAMES, REFRESH_TOKEN_HEADER_NAMES, ACCESS_TOKEN_QUERY_STRING_NAMES, \
@@ -12,8 +12,8 @@ from config import ACCESS_TOKEN_HEADER_NAMES, REFRESH_TOKEN_HEADER_NAMES, ACCESS
 from services.AreaService import AreaService
 from services.UserService import UserService
 from utils.dependencies import services_injector
-from utils.errors import UserNotLoggedIn, UserLoggedInInvalid, AreaDoesNotExist, JWTHeaderMissing, \
-    JWTAccessTokenNotFresh
+from utils.errors import UserNotLoggedIn, UserLoggedInInvalid, AreaDoesNotExist, JWTHeaderMissing
+from utils.token_utils import verify_fresh_token, TokenType, get_token_identity
 
 
 def _create_fresh_access_token(username: str):
@@ -38,11 +38,6 @@ def set_new_tokens(response: Response, username: str):
     refresh_token = _create_refresh_token(username)
     set_refresh_token(response, refresh_token)
     return access_token, refresh_token
-
-
-class TokenType(Enum):
-    ACCESS = 'access'
-    REFRESH = 'refresh'
 
 
 class TokenLocation(Enum):
@@ -91,7 +86,7 @@ def _get_encoded_token(request_type: TokenType, get_names_fn, get_token_fn):
     return token
 
 
-def _decode_token_from_request(request_type: TokenType, token_location: TokenLocation):
+def _decode_token(request_type: TokenType, token_location: TokenLocation) -> Union[dict, None]:
     encoded_token = None
 
     if token_location == TokenLocation.HEADERS:
@@ -100,54 +95,33 @@ def _decode_token_from_request(request_type: TokenType, token_location: TokenLoc
         encoded_token = _get_encoded_token(request_type, _get_query_param_names, _get_query_param_token)
 
     decoded_token = decode_token(encoded_token)
-    jwt_header = get_unverified_jwt_headers(encoded_token)
     verify_token_type(decoded_token, expected_type=request_type.value)
-
-    return decoded_token, jwt_header
-
-
-def _verify_token_in_request(request_type: TokenType, token_location: TokenLocation):
-    jwt_data, jwt_header = _decode_token_from_request(request_type, token_location)
-    request.jwt_data = jwt_data
-    request.jwt_header = jwt_header
+    return decoded_token
 
 
-def _verify_refresh_token_in_request(token_location: TokenLocation):
-    _verify_token_in_request(TokenType.REFRESH, token_location)
+def _decode_refresh_token(token_location: TokenLocation):
+    decoded_token = _decode_token(TokenType.REFRESH, token_location)
+    request.jwt_data = decoded_token
 
 
-def _verify_fresh_token_in_request(token_location: TokenLocation):
-    _verify_token_in_request(TokenType.ACCESS, token_location)
-
-    fresh = request.jwt_data['fresh']
-    if isinstance(fresh, bool):
-        if not fresh:
-            raise JWTAccessTokenNotFresh('Fresh field is false')
-    elif isinstance(fresh, int):
-        now = timegm(datetime.utcnow().utctimetuple())
-        if fresh < now:
-            raise JWTAccessTokenNotFresh('Fresh field is older than current time')
-    else:
-        raise JWTAccessTokenNotFresh('Fresh field has invalid type')
+def _decode_fresh_access_token(token_location: TokenLocation):
+    decoded_token = _decode_token(TokenType.ACCESS, token_location)
+    request.jwt_data = decoded_token
+    verify_fresh_token(request.jwt_data)
 
 
-def _get_token_identity():
-    return request.jwt_data['identity']
-
-
-def _verify_access_token(optional: bool, token_location: TokenLocation):
+def _verify_access_token(optional: bool, token_location: TokenLocation) -> Union[str, None]:
     try:
-        _verify_refresh_token_in_request(token_location)
-        username = _get_token_identity()
+        _decode_refresh_token(token_location)
+        username = get_token_identity(request.jwt_data)
     except Exception as e:
-        print(e)
         if optional:
-            return
+            return None
         else:
             raise UserNotLoggedIn(original_message=str(e))
 
     try:
-        _verify_fresh_token_in_request(token_location)
+        _decode_fresh_access_token(token_location)
         return None
     except Exception:
         pass
@@ -163,7 +137,7 @@ def retrieve_logged_in_user(optional: bool = False, token_location: TokenLocatio
 
             access_token = _verify_access_token(optional, token_location)
 
-            username = _get_token_identity()
+            username = get_token_identity(request.jwt_data)
             if not username:
                 if optional:
                     return

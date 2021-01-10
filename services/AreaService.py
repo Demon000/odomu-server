@@ -1,4 +1,7 @@
+from enum import Enum
 from typing import Union, List
+
+from pyee import BaseEventEmitter
 
 from models.Area import Area
 from models.User import User
@@ -7,9 +10,17 @@ from utils.errors import AreaCategoryInvalid, AreaAddFailed, AreaNameInvalid, Ar
 from validators.AreaValidator import AreaValidator
 
 
+class AreaServiceEvents(Enum):
+    AREA_ADDED = 'area-added'
+    AREA_DELETED = 'area-deleted'
+    AREA_UPDATED = 'area-updated'
+
+
 class AreaService:
     def __init__(self, validator: AreaValidator):
         self.__validator = validator
+
+        self.emitter = BaseEventEmitter()
 
     def add(self, owner: User, name: str, category: Union[str, int], location: str, location_point: List[float],
             image: str):
@@ -53,6 +64,8 @@ class AreaService:
             raise me
 
         area.save()
+
+        self.emitter.emit(AreaServiceEvents.AREA_ADDED, area)
 
         return area
 
@@ -105,6 +118,8 @@ class AreaService:
             raise me
 
         area.save()
+        self.emitter.emit(AreaServiceEvents.AREA_UPDATED, area)
 
     def delete(self, area: Area):
         area.delete()
+        self.emitter.emit(AreaServiceEvents.AREA_DELETED, area)
