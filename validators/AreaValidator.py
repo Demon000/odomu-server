@@ -50,5 +50,5 @@ class AreaValidator(Validator):
         if not new_updated_at_timestamp:
             raise AreaUpdatedAtTimestampInvalid('Cannot be empty')
 
-        if updated_at_timestamp > new_updated_at_timestamp:
-            raise AreaUpdatedAtTimestampInvalid('Must be greater or equal than the old updated at timestamp')
+        if updated_at_timestamp != new_updated_at_timestamp:
+            raise AreaUpdatedAtTimestampInvalid('Must be equal to the old updated at timestamp')
