@@ -11,3 +11,4 @@ pyee
 geopy
 flask_socketio
 eventlet
+Pillow
