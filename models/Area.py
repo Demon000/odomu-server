@@ -1,8 +1,9 @@
 from base64 import b64decode, b64encode
+from datetime import datetime
 from tempfile import TemporaryFile
 
 from mongoengine import Document, StringField, IntField, PointField, ReferenceField, ImageField, GridFSError, \
-    GridFSProxy
+    GridFSProxy, DateTimeField
 
 from utils.DualMap import DualMap
 
@@ -23,6 +24,19 @@ class Area(Document):
     location = StringField(required=True)
     location_point = PointField()
     image = ImageField(size=(1920, 1080, False), thumbnail_size=(256, 256, False))
+    created_at = DateTimeField(default=datetime.now)
+    updated_at = DateTimeField(default=datetime.now)
+
+    def get_timestamp_common(self, field) -> int:
+        return int(field.timestamp())
+
+    @property
+    def created_at_timestamp(self):
+        return self.get_timestamp_common(self.created_at)
+
+    @property
+    def updated_at_timestamp(self):
+        return self.get_timestamp_common(self.updated_at)
 
     def put_b64_image(self, b64_string: str):
         byte_string = b64decode(b64_string)
@@ -65,6 +79,8 @@ class Area(Document):
             'no_controllers': 0,
             'location': self.location,
             'location_point': location_points,
+            'created_at_timestamp': self.created_at_timestamp,
+            'updated_at_timestamp': self.updated_at_timestamp,
         }
 
         if with_image and self.image:
@@ -74,3 +90,10 @@ class Area(Document):
             d['thumbnail'] = self.get_b64_image_common(self.image.thumbnail)
 
         return d
+
+    def save(self, *args, **kwargs):
+        if not self.created_at:
+            self.created_at = datetime.now()
+
+        self.updated_at = datetime.now()
+        return super().save(*args, **kwargs)

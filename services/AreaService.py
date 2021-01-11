@@ -6,7 +6,7 @@ from pyee import BaseEventEmitter
 from models.Area import Area
 from models.User import User
 from utils.errors import AreaCategoryInvalid, AreaAddFailed, AreaNameInvalid, AreaLocationInvalid, \
-    AreaUpdateFailed, AreaOwnerInvalid, AreaLocationPointInvalid, AreaImageInvalid
+    AreaUpdateFailed, AreaOwnerInvalid, AreaLocationPointInvalid, AreaImageInvalid, AreaUpdatedAtTimestampInvalid
 from validators.AreaValidator import AreaValidator
 
 
@@ -76,7 +76,7 @@ class AreaService:
         return Area.objects(*args, **kwargs)
 
     def update(self, area: Area, name: str, category: Union[str, int], location: str, location_point: List[float],
-               image: str):
+               image: str, updated_at_timestamp: int):
         me = AreaUpdateFailed()
 
         if name is not None:
@@ -114,12 +114,19 @@ class AreaService:
                 ae = AreaImageInvalid(original_message=str(e))
                 me.add_error(ae)
 
+        try:
+            self.__validator.validate_updated_at_timestamp(area.updated_at_timestamp, updated_at_timestamp)
+        except AreaUpdatedAtTimestampInvalid as e:
+            me.add_error(e)
+
         if not me.is_empty():
             raise me
 
         area.save()
+
         self.emitter.emit(AreaServiceEvents.AREA_UPDATED, area)
 
     def delete(self, area: Area):
         area.delete()
+
         self.emitter.emit(AreaServiceEvents.AREA_DELETED, area)

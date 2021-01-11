@@ -55,10 +55,11 @@ def areas_patch_area(area_service: AreaService):
     location = request.json.get('location')
     location_point = request.json.get('location_point')
     image = request.json.get('image')
+    updated_at_timestamp = request.json.get('updated_at_timestamp')
 
     area = request.area
 
-    area_service.update(area, name, category, location, location_point, image)
+    area_service.update(area, name, category, location, location_point, image, updated_at_timestamp)
 
     return jsonify(area.to_dict(with_image=True, with_thumbnail=True))
 

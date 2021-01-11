@@ -158,6 +158,10 @@ AreaUpdateFailed = make_multi_error('AreaUpdateFailed',
                                     'area-update-failed', 400,
                                     'Area update failed')
 
+AreaUpdatedAtTimestampInvalid = make_validation_error('AreaUpdatedAtTimestampInvalid',
+                                                      'area-updated-at-timestamp-invalid', 400,
+                                                      'Is invalid',
+                                                      field_name='updated_at_timestamp')
 AreaOwnerInvalid = make_validation_error('AreaOwnerInvalid',
                                          'area-owner-invalid', 400,
                                          'Is invalid',

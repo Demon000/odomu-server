@@ -3,7 +3,7 @@ from typing import Union, List
 from models.Area import area_categories_map
 from models.User import User
 from utils.errors import AreaCategoryInvalid, AreaNameInvalid, AreaLocationInvalid, AreaOwnerInvalid, \
-    AreaLocationPointInvalid
+    AreaLocationPointInvalid, AreaUpdatedAtTimestampInvalid
 from validators.Validator import Validator
 
 
@@ -19,7 +19,7 @@ class AreaValidator(Validator):
 
         value = area_categories_map.to_key_either(value)
         if value < 0:
-            raise AreaCategoryInvalid("Must be one of")
+            raise AreaCategoryInvalid('Must be one of')
 
         return value
 
@@ -45,3 +45,10 @@ class AreaValidator(Validator):
         for x in value:
             if type(x) != float:
                 raise error
+
+    def validate_updated_at_timestamp(self, updated_at_timestamp: int, new_updated_at_timestamp: Union[int, None]):
+        if not new_updated_at_timestamp:
+            raise AreaUpdatedAtTimestampInvalid('Cannot be empty')
+
+        if updated_at_timestamp > new_updated_at_timestamp:
+            raise AreaUpdatedAtTimestampInvalid('Must be greater or equal than the old updated at timestamp')
