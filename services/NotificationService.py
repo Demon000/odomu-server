@@ -77,8 +77,9 @@ class NotificationService:
         if not sids:
             return
 
+        d = area.to_dict()
         for sid in sids:
-            self.emit_to_sid(sid, name, area.to_dict())
+            self.emit_to_sid(sid, name, d)
 
     def notify_area_add(self, area: Area):
         self.notify_area_change(SocketEvents.AREA_ADDED.value, area)
