@@ -74,7 +74,6 @@ class Area(Document):
             'owner': self.owner.to_dict(),
             'name': self.name,
             'category': self.category,
-            'has_image': bool(self.image),
             'no_devices': 0,
             'no_controllers': 0,
             'location': self.location,
