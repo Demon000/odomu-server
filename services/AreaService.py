@@ -107,17 +107,17 @@ class AreaService:
             except AreaLocationPointInvalid as e:
                 me.add_error(e)
 
+        try:
+            self.__validator.validate_updated_at_timestamp(area.updated_at_timestamp, updated_at_timestamp)
+        except AreaUpdatedAtTimestampInvalid as e:
+            me.add_error(e)
+
         if image:
             try:
                 area.put_b64_image(image)
             except Exception as e:
                 ae = AreaImageInvalid(original_message=str(e))
                 me.add_error(ae)
-
-        try:
-            self.__validator.validate_updated_at_timestamp(area.updated_at_timestamp, updated_at_timestamp)
-        except AreaUpdatedAtTimestampInvalid as e:
-            me.add_error(e)
 
         if not me.is_empty():
             raise me

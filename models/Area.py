@@ -52,10 +52,13 @@ class Area(Document):
                 self.image.replace(f)
 
     def get_b64_image_common(self, image: GridFSProxy):
-        byte_array = image.read()
-        byte_string = bytes(byte_array)
-        b64_string = b64encode(byte_string)
-        return b64_string.decode('utf-8')
+        try:
+            byte_array = image.read()
+            byte_string = bytes(byte_array)
+            b64_string = b64encode(byte_string)
+            return b64_string.decode('utf-8')
+        except:
+            return None
 
     def to_dict(self, with_image: bool = False, with_thumbnail: bool = False):
         #
