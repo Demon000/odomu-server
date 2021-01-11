@@ -20,7 +20,7 @@ def areas_get(area_service: AreaService):
 
     areas = area_service.find_by(owner=user).order_by('-id')
 
-    return jsonify(get_paginated_items_from_qs(areas, with_thumbnail=True))
+    return jsonify(get_paginated_items_from_qs(areas))
 
 
 @api.route('', methods=['POST'])
@@ -35,7 +35,7 @@ def areas_post(area_service: AreaService):
 
     area = area_service.add(user, name, category, location, location_point, image)
 
-    return jsonify(area.to_dict(with_image=True, with_thumbnail=True))
+    return jsonify(area.to_dict())
 
 
 @api.route('/<string:area_id>')
@@ -43,7 +43,7 @@ def areas_post(area_service: AreaService):
 @retrieve_area(AreaRetrievalType.ID_AND_OWNER)
 def areas_get_area():
     area = request.area
-    return jsonify(area.to_dict(with_image=True, with_thumbnail=True))
+    return jsonify(area.to_dict())
 
 
 @api.route('/<string:area_id>', methods=['PATCH'])
@@ -61,7 +61,7 @@ def areas_patch_area(area_service: AreaService):
 
     area_service.update(area, name, category, location, location_point, image, updated_at_timestamp)
 
-    return jsonify(area.to_dict(with_image=True, with_thumbnail=True))
+    return jsonify(area.to_dict())
 
 
 @api.route('/<string:area_id>', methods=['DELETE'])

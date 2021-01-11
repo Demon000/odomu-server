@@ -11,7 +11,7 @@ from pyee import EventEmitter
 
 from models.Area import Area
 from models.User import User
-from utils.errors import UserDoesNotExist, JWTHeaderMissing, UserNotLoggedIn
+from utils.errors import JWTHeaderMissing, UserNotLoggedIn
 from utils.token_utils import TokenType, verify_fresh_token, get_token_identity
 
 

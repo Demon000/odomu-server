@@ -23,7 +23,7 @@ class Area(Document):
                         max_value=area_categories_map.maximum_key())
     location = StringField(required=True)
     location_point = PointField()
-    image = ImageField(size=(1920, 1080, False), thumbnail_size=(256, 256, False))
+    image = ImageField(size=(1920, 1080, False))
     created_at = DateTimeField(default=datetime.now)
     updated_at = DateTimeField(default=datetime.now)
 
@@ -60,7 +60,7 @@ class Area(Document):
         except:
             return None
 
-    def to_dict(self, with_image: bool = False, with_thumbnail: bool = False):
+    def to_dict(self):
         #
         # HACK: location point is list when the object was created, but gets saved
         # as a dict with a coordinates key containing the list
@@ -72,7 +72,7 @@ class Area(Document):
         else:
             location_points = []
 
-        d = {
+        return {
             'id': str(self.id),
             'owner': self.owner.to_dict(),
             'name': self.name,
@@ -83,15 +83,8 @@ class Area(Document):
             'location_point': location_points,
             'created_at_timestamp': self.created_at_timestamp,
             'updated_at_timestamp': self.updated_at_timestamp,
+            'image': self.get_b64_image_common(self.image),
         }
-
-        if with_image and self.image:
-            d['image'] = self.get_b64_image_common(self.image)
-
-        if with_thumbnail and self.image and self.image.thumbnail:
-            d['thumbnail'] = self.get_b64_image_common(self.image.thumbnail)
-
-        return d
 
     def save(self, *args, **kwargs):
         if not self.created_at:
