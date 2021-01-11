@@ -112,6 +112,9 @@ class AreaService:
         except AreaUpdatedAtTimestampInvalid as e:
             me.add_error(e)
 
+        if not me.is_empty():
+            raise me
+
         if image:
             try:
                 area.put_b64_image(image)
