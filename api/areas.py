@@ -23,6 +23,17 @@ def areas_get(area_service: AreaService):
     return jsonify(get_paginated_items_from_qs(areas))
 
 
+@api.route('/all')
+@retrieve_logged_in_user()
+def areas_get_all(area_service: AreaService):
+    user = request.user
+
+    areas = area_service.find_by(owner=user).order_by('-id')
+    response = [a.to_dict() for a in areas]
+
+    return jsonify(response)
+
+
 @api.route('', methods=['POST'])
 @retrieve_logged_in_user()
 def areas_post(area_service: AreaService):
